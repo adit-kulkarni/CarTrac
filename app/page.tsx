@@ -45,8 +45,8 @@ export default function Home() {
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [sortOption, setSortOption] = useState<keyof Car | "">("");
   const [filters, setFilters] = useState({
-    year: [1900, 2100],
-    topSpeed: [0, 500],
+    year: [1930, 2025],
+    topSpeed: [70, 350],
     rating: [1, 5],
     roles: [],
   });
@@ -141,12 +141,13 @@ export default function Home() {
   const handleLogin = async () => {
     try {
       await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
-      await fetchCars(); // Fetch user-specific cars
+      await fetchCars();
     } catch (error) {
       console.error("Login failed", error);
-      alert("Login failed. Please check your credentials.");
+      alert("Login failed. Check your credentials.");
     }
   };
+  
   
   
   
@@ -171,6 +172,7 @@ export default function Home() {
       alert("Error signing up. Please try again.");
     }
   };
+  
   
   
 
@@ -233,28 +235,12 @@ export default function Home() {
             className="block w-full max-w-md p-3 mb-4 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:ring-2 focus:ring-green-500"
           />
           <button
-            onClick={async () => {
-              if (signupPassword !== confirmSignupPassword) {
-                alert("Passwords do not match!");
-                return;
-              }
-              try {
-                const userCredential = await createUserWithEmailAndPassword(
-                  auth,
-                  signupEmail,
-                  signupPassword
-                );
-                await sendEmailVerification(userCredential.user);
-                alert("Verification email sent!");
-              } catch (error) {
-                console.error("Signup error", error);
-                alert("Signup failed. Try again.");
-              }
-            }}
+            onClick={handleSignup}
             className="w-full max-w-md bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition"
           >
             Sign Up
           </button>
+
         </div>
   
         {/* Login Section */}
@@ -275,19 +261,12 @@ export default function Home() {
             className="block w-full max-w-md p-3 mb-4 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:ring-2 focus:ring-blue-500"
           />
           <button
-            onClick={async () => {
-              try {
-                await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
-                await fetchCars();
-              } catch (error) {
-                console.error("Login failed", error);
-                alert("Login failed. Check your credentials.");
-              }
-            }}
+            onClick={handleLogin}
             className="w-full max-w-md bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
           >
             Log In
           </button>
+
         </div>
       </div>
     );
@@ -321,6 +300,14 @@ export default function Home() {
       return 0;
     });
 
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-gray-200 flex items-center justify-center">
+        <h1 className="text-3xl font-bold">Loading...</h1>
+      </div>
+    );
+  }  
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 font-[\'Playfair Display\'] p-6">
       <h1 className="text-4xl font-extrabold text-center mb-6 tracking-wide">Car Tracker</h1>
