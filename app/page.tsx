@@ -23,7 +23,15 @@ interface Car {
 
 export default function Home() {
   const [cars, setCars] = useState<Car[]>([]);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    make: string;
+    model: string;
+    year: string;
+    topSpeed: string;
+    rating: string;
+    image: string;
+    roles: string[];
+  }>({
     make: "",
     model: "",
     year: "",
@@ -32,6 +40,7 @@ export default function Home() {
     image: "",
     roles: [],
   });
+  
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [confirmSignupPassword, setConfirmSignupPassword] = useState("");
