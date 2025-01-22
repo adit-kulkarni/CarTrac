@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { auth, db } from "../lib/firebaseConfig";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, addDoc, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { sendEmailVerification } from "firebase/auth";
-
+import { User } from "firebase/auth";
 
 const storage = getStorage();
 
@@ -39,9 +39,7 @@ export default function Home() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
-  // const [email, setEmail] = useState("");
-  // const [password, setPassword] = useState("");
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [sortOption, setSortOption] = useState<keyof Car | "">("");
   const [filters, setFilters] = useState({
@@ -52,7 +50,7 @@ export default function Home() {
   });
   const [loading, setLoading] = useState(true);
 
-  const fetchCars = async () => {
+  const fetchCars = useCallback(async () => {
     if (user) {
       try {
         setLoading(true);
@@ -73,9 +71,7 @@ export default function Home() {
       setCars([]);
       setLoading(false);
     }
-  };
-  
-  
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -86,8 +82,7 @@ export default function Home() {
         fetchCars();
       }
     }
-  }, [user]);
-  
+  }, [user, fetchCars]);
 
   useEffect(() => {
     if (cars.length > 0) {
@@ -147,34 +142,27 @@ export default function Home() {
       alert("Login failed. Check your credentials.");
     }
   };
-  
-  
-  
-  
 
   const handleSignup = async () => {
     if (signupPassword !== confirmSignupPassword) {
       alert("Passwords do not match. Please try again.");
       return;
     }
-  
+
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, signupEmail, signupPassword);
       const user = userCredential.user;
-  
+
       // Send email verification
       await sendEmailVerification(user);
       alert("Verification email sent! Please check your inbox.");
-  
+
       await fetchCars();
     } catch (error) {
       console.error("Signup failed", error);
       alert("Error signing up. Please try again.");
     }
   };
-  
-  
-  
 
   const handleLogout = async () => {
     try {
@@ -187,8 +175,6 @@ export default function Home() {
       console.error("Logout failed", error);
     }
   };
-  
-  
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -200,11 +186,10 @@ export default function Home() {
         setLoading(false);
       }
     });
-  
-    return () => unsubscribe(); // Cleanup on component unmount
-  }, []);
-  
 
+    return () => unsubscribe(); // Cleanup on component unmount
+  }, [fetchCars]);
+  
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col items-center justify-center">
@@ -271,10 +256,13 @@ export default function Home() {
       </div>
     );
   }
-  
-  
-  
-  
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-gray-200 flex items-center justify-center">
+        <h1 className="text-3xl font-bold">Loading...</h1>
+      </div>
+    );
+  }
 
   const applyFilters = (car: Car) => {
     const roleMatch =
@@ -300,14 +288,6 @@ export default function Home() {
       return 0;
     });
 
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-gray-200 flex items-center justify-center">
-        <h1 className="text-3xl font-bold">Loading...</h1>
-      </div>
-    );
-  }  
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 font-[\'Playfair Display\'] p-6">
       <h1 className="text-4xl font-extrabold text-center mb-6 tracking-wide">Car Tracker</h1>
@@ -378,8 +358,14 @@ export default function Home() {
           </div>
           <div className="mb-4">
             <label className="block text-gray-300 font-bold mb-2">Roles:</label>
-            {["Driver", "Passenger", "Observed"].map((role) => (
-              <div key={role} className="flex items-center mb-2">
+            {[
+              "Driver",
+              "Passenger",
+              "Observed",
+            ].map((role) => (
+              <div
+                key={role}
+                className="flex items-center mb-2">
                 <input
                   type="checkbox"
                   value={role}
@@ -565,3 +551,4 @@ export default function Home() {
     </div>
   );
 }
+
