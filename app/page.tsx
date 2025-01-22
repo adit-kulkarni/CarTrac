@@ -51,12 +51,18 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [sortOption, setSortOption] = useState<keyof Car | "">("");
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<{
+    year: [number, number];
+    topSpeed: [number, number];
+    rating: [number, number];
+    roles: string[]; // Explicitly typing roles as string[]
+  }>({
     year: [1930, 2025],
     topSpeed: [70, 350],
     rating: [1, 5],
     roles: [],
   });
+  
   const [loading, setLoading] = useState(true);
 
   const fetchCars = useCallback(async () => {
