@@ -5,6 +5,8 @@ import { auth, db } from "../lib/firebaseConfig";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
 import { collection, addDoc, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { sendEmailVerification } from "firebase/auth";
+
 
 const storage = getStorage();
 
@@ -30,8 +32,15 @@ export default function Home() {
     image: "",
     roles: [],
   });
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
+  const [confirmSignupPassword, setConfirmSignupPassword] = useState("");
+
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+
+  // const [email, setEmail] = useState("");
+  // const [password, setPassword] = useState("");
   const [user, setUser] = useState<any>(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [sortOption, setSortOption] = useState<keyof Car | "">("");
@@ -54,23 +63,31 @@ export default function Home() {
           fetchedCars.push({ ...(doc.data() as Car), id: doc.id });
         });
         setCars(fetchedCars);
-        localStorage.setItem("cars", JSON.stringify(fetchedCars));
+        localStorage.setItem(`cars_${user.uid}`, JSON.stringify(fetchedCars)); // Scoped to user
       } catch (error) {
         console.error("Error fetching cars:", error);
       } finally {
         setLoading(false);
       }
     } else {
+      setCars([]);
       setLoading(false);
     }
   };
+  
+  
 
   useEffect(() => {
-    const storedCars = localStorage.getItem("cars");
-    if (storedCars) {
-      setCars(JSON.parse(storedCars));
+    if (user) {
+      const storedCars = localStorage.getItem(`cars_${user.uid}`);
+      if (storedCars) {
+        setCars(JSON.parse(storedCars));
+      } else {
+        fetchCars();
+      }
     }
-  }, []);
+  }, [user]);
+  
 
   useEffect(() => {
     if (cars.length > 0) {
@@ -123,32 +140,53 @@ export default function Home() {
 
   const handleLogin = async () => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      await fetchCars();
+      await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+      await fetchCars(); // Fetch user-specific cars
     } catch (error) {
       console.error("Login failed", error);
+      alert("Login failed. Please check your credentials.");
     }
   };
+  
+  
+  
 
   const handleSignup = async () => {
+    if (signupPassword !== confirmSignupPassword) {
+      alert("Passwords do not match. Please try again.");
+      return;
+    }
+  
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, signupEmail, signupPassword);
+      const user = userCredential.user;
+  
+      // Send email verification
+      await sendEmailVerification(user);
+      alert("Verification email sent! Please check your inbox.");
+  
       await fetchCars();
     } catch (error) {
       console.error("Signup failed", error);
+      alert("Error signing up. Please try again.");
     }
   };
+  
+  
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       setUser(null);
       setCars([]);
-      window.location.reload(); // Redirects to login page
+      localStorage.removeItem(`cars_${user?.uid}`); // Clear only the logged-in user's data
+      window.location.reload();
     } catch (error) {
       console.error("Logout failed", error);
     }
   };
+  
+  
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -168,42 +206,94 @@ export default function Home() {
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col items-center justify-center">
-        <h1 className="text-3xl font-bold mb-6">Car Tracker - Login</h1>
-        <div className="mb-4">
+        <h1 className="text-4xl font-bold mb-6">Welcome to CarTrac</h1>
+  
+        {/* Sign-Up Section */}
+        <div className="mb-12">
+          <h2 className="text-1xl font-semibold mb-4">New to the CarTrac gang? Sign up below:</h2>
           <input
             type="email"
             placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-3 mb-4 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:ring-2 focus:ring-blue-500"
+            value={signupEmail}
+            onChange={(e) => setSignupEmail(e.target.value)}
+            className="block w-full max-w-md p-3 mb-4 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:ring-2 focus:ring-green-500"
           />
-        </div>
-        <div className="mb-4">
           <input
             type="password"
             placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-3 mb-4 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:ring-2 focus:ring-blue-500"
+            value={signupPassword}
+            onChange={(e) => setSignupPassword(e.target.value)}
+            className="block w-full max-w-md p-3 mb-4 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:ring-2 focus:ring-green-500"
           />
-        </div>
-        <div className="flex space-x-4">
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            value={confirmSignupPassword}
+            onChange={(e) => setConfirmSignupPassword(e.target.value)}
+            className="block w-full max-w-md p-3 mb-4 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:ring-2 focus:ring-green-500"
+          />
           <button
-            onClick={handleLogin}
-            className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition"
-          >
-            Log In
-          </button>
-          <button
-            onClick={handleSignup}
-            className="bg-green-600 text-white py-2 px-6 rounded-lg hover:bg-green-700 transition"
+            onClick={async () => {
+              if (signupPassword !== confirmSignupPassword) {
+                alert("Passwords do not match!");
+                return;
+              }
+              try {
+                const userCredential = await createUserWithEmailAndPassword(
+                  auth,
+                  signupEmail,
+                  signupPassword
+                );
+                await sendEmailVerification(userCredential.user);
+                alert("Verification email sent!");
+              } catch (error) {
+                console.error("Signup error", error);
+                alert("Signup failed. Try again.");
+              }
+            }}
+            className="w-full max-w-md bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition"
           >
             Sign Up
+          </button>
+        </div>
+  
+        {/* Login Section */}
+        <div>
+          <h2 className="text-1xl font-semibold mb-4">Already a Car Merchant? Log in below:</h2>
+          <input
+            type="email"
+            placeholder="Email"
+            value={loginEmail}
+            onChange={(e) => setLoginEmail(e.target.value)}
+            className="block w-full max-w-md p-3 mb-4 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={loginPassword}
+            onChange={(e) => setLoginPassword(e.target.value)}
+            className="block w-full max-w-md p-3 mb-4 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={async () => {
+              try {
+                await signInWithEmailAndPassword(auth, loginEmail, loginPassword);
+                await fetchCars();
+              } catch (error) {
+                console.error("Login failed", error);
+                alert("Login failed. Check your credentials.");
+              }
+            }}
+            className="w-full max-w-md bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
+          >
+            Log In
           </button>
         </div>
       </div>
     );
   }
+  
+  
   
   
 
@@ -474,7 +564,7 @@ export default function Home() {
               <p className="text-gray-300">Year: {car.year}</p>
               <p className="text-gray-300">Top Speed: {car.topSpeed} km/h</p>
               <p className="text-gray-300">Rating: {car.rating}/5</p>
-              <p className="text-gray-300">Roles: {car.roles.join(", ")}</p>
+              <p className="text-gray-300">Roles: {car.roles?.length > 0 ? car.roles.join(", ") : "None"}</p>
               <button
                 onClick={() => deleteCar(car.id!)}
                 className="mt-4 bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600 transition"
