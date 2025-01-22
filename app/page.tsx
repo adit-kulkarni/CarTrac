@@ -1,101 +1,490 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import { auth, db } from "../lib/firebaseConfig";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "firebase/auth";
+import { collection, addDoc, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
+
+const storage = getStorage();
+
+interface Car {
+  id?: string;
+  make: string;
+  model: string;
+  year: number;
+  topSpeed: number;
+  rating: number;
+  image: string;
+  roles: string[];
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [cars, setCars] = useState<Car[]>([]);
+  const [form, setForm] = useState({
+    make: "",
+    model: "",
+    year: "",
+    topSpeed: "",
+    rating: "",
+    image: "",
+    roles: [],
+  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [user, setUser] = useState<any>(null);
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [sortOption, setSortOption] = useState<keyof Car | "">("");
+  const [filters, setFilters] = useState({
+    year: [1900, 2100],
+    topSpeed: [0, 500],
+    rating: [1, 5],
+    roles: [],
+  });
+  const [loading, setLoading] = useState(true);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const fetchCars = async () => {
+    if (user) {
+      try {
+        setLoading(true);
+        const carQuery = query(collection(db, "cars"), where("userId", "==", user.uid));
+        const querySnapshot = await getDocs(carQuery);
+        const fetchedCars: Car[] = [];
+        querySnapshot.forEach((doc) => {
+          fetchedCars.push({ ...(doc.data() as Car), id: doc.id });
+        });
+        setCars(fetchedCars);
+        localStorage.setItem("cars", JSON.stringify(fetchedCars));
+      } catch (error) {
+        console.error("Error fetching cars:", error);
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const storedCars = localStorage.getItem("cars");
+    if (storedCars) {
+      setCars(JSON.parse(storedCars));
+    }
+  }, []);
+
+  useEffect(() => {
+    if (cars.length > 0) {
+      localStorage.setItem("cars", JSON.stringify(cars));
+    }
+  }, [cars]);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && user) {
+      const storageRef = ref(storage, `car-images/${user.uid}/${file.name}`);
+      try {
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        setForm({ ...form, image: downloadURL });
+      } catch (error) {
+        console.error("Image upload failed", error);
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const newCar = {
+      make: form.make,
+      model: form.model,
+      year: Number(form.year),
+      topSpeed: Number(form.topSpeed),
+      rating: Number(form.rating),
+      image: form.image,
+      roles: form.roles,
+    };
+    if (user) {
+      const carCollection = collection(db, "cars");
+      const docRef = await addDoc(carCollection, { ...newCar, userId: user.uid });
+      newCar.id = docRef.id;
+    }
+    setCars((prevCars) => [...prevCars, newCar]);
+    setForm({ make: "", model: "", year: "", topSpeed: "", rating: "", image: "", roles: [] });
+    setIsFormVisible(false);
+  };
+
+  const deleteCar = async (carId: string) => {
+    if (user) {
+      const carDoc = doc(db, "cars", carId);
+      await deleteDoc(carDoc);
+      setCars((prevCars) => prevCars.filter((car) => car.id !== carId));
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      await fetchCars();
+    } catch (error) {
+      console.error("Login failed", error);
+    }
+  };
+
+  const handleSignup = async () => {
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      await fetchCars();
+    } catch (error) {
+      console.error("Signup failed", error);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      setCars([]);
+      window.location.reload(); // Redirects to login page
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        setLoading(true);
+        await fetchCars();
+      } else {
+        setLoading(false);
+      }
+    });
+  
+    return () => unsubscribe(); // Cleanup on component unmount
+  }, []);
+  
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col items-center justify-center">
+        <h1 className="text-3xl font-bold mb-6">Car Tracker - Login</h1>
+        <div className="mb-4">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-3 mb-4 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:ring-2 focus:ring-blue-500"
+          />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+        <div className="mb-4">
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-3 mb-4 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:ring-2 focus:ring-blue-500"
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
+        </div>
+        <div className="flex space-x-4">
+          <button
+            onClick={handleLogin}
+            className="bg-blue-600 text-white py-2 px-6 rounded-lg hover:bg-blue-700 transition"
+          >
+            Log In
+          </button>
+          <button
+            onClick={handleSignup}
+            className="bg-green-600 text-white py-2 px-6 rounded-lg hover:bg-green-700 transition"
+          >
+            Sign Up
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  
+
+  const applyFilters = (car: Car) => {
+    const roleMatch =
+      filters.roles.length === 0 || filters.roles.some((role) => car.roles?.includes(role));
+    return (
+      roleMatch &&
+      car.year >= filters.year[0] &&
+      car.year <= filters.year[1] &&
+      car.topSpeed >= filters.topSpeed[0] &&
+      car.topSpeed <= filters.topSpeed[1] &&
+      car.rating >= filters.rating[0] &&
+      car.rating <= filters.rating[1]
+    );
+  };
+
+  const sortedAndFilteredCars = cars
+    .filter(applyFilters)
+    .sort((a, b) => {
+      if (!sortOption) return 0;
+      if (typeof a[sortOption] === "number" && typeof b[sortOption] === "number") {
+        return b[sortOption] - a[sortOption];
+      }
+      return 0;
+    });
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-gray-200 font-[\'Playfair Display\'] p-6">
+      <h1 className="text-4xl font-extrabold text-center mb-6 tracking-wide">Car Tracker</h1>
+      <button
+        onClick={handleLogout}
+        className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition mb-6">
+        Log Out
+      </button>
+
+      <h2
+        className="text-2xl font-bold cursor-pointer mb-4"
+        onClick={() => setIsFormVisible(!isFormVisible)}
+      >
+        Add New Car {isFormVisible ? "-" : "+"}
+      </h2>
+
+      {isFormVisible && (
+        <form onSubmit={handleSubmit} className="max-w-md mx-auto mb-8 bg-gray-800 p-6 rounded-lg shadow-lg">
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Make"
+              value={form.make}
+              onChange={(e) => setForm({ ...form, make: e.target.value })}
+              className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <input
+              type="text"
+              placeholder="Model"
+              value={form.model}
+              onChange={(e) => setForm({ ...form, model: e.target.value })}
+              className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <input
+              type="number"
+              placeholder="Year"
+              value={form.year}
+              onChange={(e) => setForm({ ...form, year: e.target.value })}
+              className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <input
+              type="number"
+              placeholder="Top Speed (km/h)"
+              value={form.topSpeed}
+              onChange={(e) => setForm({ ...form, topSpeed: e.target.value })}
+              className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <input
+              type="number"
+              placeholder="Rating (1-5)"
+              value={form.rating}
+              onChange={(e) => setForm({ ...form, rating: e.target.value })}
+              className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-gray-300 font-bold mb-2">Roles:</label>
+            {["Driver", "Passenger", "Observed"].map((role) => (
+              <div key={role} className="flex items-center mb-2">
+                <input
+                  type="checkbox"
+                  value={role}
+                  checked={form.roles.includes(role)}
+                  onChange={() =>
+                    setForm((prevForm) => ({
+                      ...prevForm,
+                      roles: prevForm.roles.includes(role)
+                        ? prevForm.roles.filter((r) => r !== role)
+                        : [...prevForm.roles, role],
+                    }))
+                  }
+                  className="mr-2"
+                />
+                <span className="text-gray-300">{role}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mb-4">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
+          >
+            Add Car
+          </button>
+        </form>
+      )}
+
+      <div className="mb-6">
+        <label className="text-xl text-gray-200 font-bold mr-4">Filter By Year:</label>
+        <input
+          type="range"
+          min="1900"
+          max="2100"
+          value={filters.year[0]}
+          onChange={(e) =>
+            setFilters({ ...filters, year: [Number(e.target.value), filters.year[1]] })
+          }
+          className="mr-2"
+        />
+        <input
+          type="range"
+          min="1900"
+          max="2100"
+          value={filters.year[1]}
+          onChange={(e) =>
+            setFilters({ ...filters, year: [filters.year[0], Number(e.target.value)] })
+          }
+        />
+        <span className="text-gray-300 ml-2">
+          {filters.year[0]} - {filters.year[1]}
+        </span>
+      </div>
+
+      <div className="mb-6">
+        <label className="text-xl text-gray-200 font-bold mr-4">Filter By Speed:</label>
+        <input
+          type="range"
+          min="0"
+          max="500"
+          value={filters.topSpeed[0]}
+          onChange={(e) =>
+            setFilters({ ...filters, topSpeed: [Number(e.target.value), filters.topSpeed[1]] })
+          }
+          className="mr-2"
+        />
+        <input
+          type="range"
+          min="0"
+          max="500"
+          value={filters.topSpeed[1]}
+          onChange={(e) =>
+            setFilters({ ...filters, topSpeed: [filters.topSpeed[0], Number(e.target.value)] })
+          }
+        />
+        <span className="text-gray-300 ml-2">
+          {filters.topSpeed[0]} - {filters.topSpeed[1]} km/h
+        </span>
+      </div>
+
+      <div className="mb-6">
+        <label className="text-xl text-gray-200 font-bold mr-4">Filter By Rating:</label>
+        <input
+          type="range"
+          min="1"
+          max="5"
+          step="0.1"
+          value={filters.rating[0]}
+          onChange={(e) =>
+            setFilters({ ...filters, rating: [Number(e.target.value), filters.rating[1]] })
+          }
+          className="mr-2"
+        />
+        <input
+          type="range"
+          min="1"
+          max="5"
+          step="0.1"
+          value={filters.rating[1]}
+          onChange={(e) =>
+            setFilters({ ...filters, rating: [filters.rating[0], Number(e.target.value)] })
+          }
+        />
+        <span className="text-gray-300 ml-2">
+          {filters.rating[0]} - {filters.rating[1]}
+        </span>
+      </div>
+
+      <div className="mb-6">
+        <label className="text-xl text-gray-200 font-bold mr-4">Filter By Roles:</label>
+        {["Driver", "Passenger", "Observed"].map((role) => (
+          <div key={role} className="inline-flex items-center mr-4">
+            <input
+              type="checkbox"
+              value={role}
+              checked={filters.roles.includes(role)}
+              onChange={() =>
+                setFilters((prevFilters) => ({
+                  ...prevFilters,
+                  roles: prevFilters.roles.includes(role)
+                    ? prevFilters.roles.filter((r) => r !== role)
+                    : [...prevFilters.roles, role],
+                }))
+              }
+              className="mr-2"
+            />
+            <span className="text-gray-300">{role}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="mb-6">
+        <label className="text-xl text-gray-200 font-bold mr-4">Sort By:</label>
+        <select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value as keyof Car)}
+          className="p-2 bg-gray-800 text-gray-200 rounded"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+          <option value="">None</option>
+          <option value="year">Year</option>
+          <option value="topSpeed">Top Speed</option>
+          <option value="rating">Rating</option>
+        </select>
+      </div>
+
+      <h2 className="text-3xl font-semibold mb-6 tracking-wide">Cars</h2>
+      <div className="grid grid-cols-1 gap-6">
+        {sortedAndFilteredCars.map((car, index) => (
+          <div
+            key={index}
+            className="relative bg-gray-800 p-6 rounded-lg shadow-lg"
+            style={{
+              backgroundImage: `url('${car.image}')`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          >
+            <div className="bg-black bg-opacity-60 p-4 rounded">
+              <h3 className="text-xl font-bold text-white">
+                {car.make} {car.model}
+              </h3>
+              <p className="text-gray-300">Year: {car.year}</p>
+              <p className="text-gray-300">Top Speed: {car.topSpeed} km/h</p>
+              <p className="text-gray-300">Rating: {car.rating}/5</p>
+              <p className="text-gray-300">Roles: {car.roles.join(", ")}</p>
+              <button
+                onClick={() => deleteCar(car.id!)}
+                className="mt-4 bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600 transition"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
