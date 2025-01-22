@@ -114,13 +114,19 @@ export default function Home() {
       rating: Number(form.rating),
       image: form.image,
       roles: form.roles,
+      id: "",
     };
     if (user) {
-      const carCollection = collection(db, "cars");
-      const docRef = await addDoc(carCollection, { ...newCar, userId: user.uid });
-      newCar.id = docRef.id;
+      try {
+        const carCollection = collection(db, "cars");
+        const docRef = await addDoc(carCollection, { ...newCar, userId: user.uid });
+        newCar.id = docRef.id; // Assign the generated document ID
+        setCars((prevCars) => [...prevCars, newCar]);
+      } catch (error) {
+        console.error("Error adding car:", error);
+      }
     }
-    setCars((prevCars) => [...prevCars, newCar]);
+    
     setForm({ make: "", model: "", year: "", topSpeed: "", rating: "", image: "", roles: [] });
     setIsFormVisible(false);
   };
@@ -189,7 +195,7 @@ export default function Home() {
 
     return () => unsubscribe(); // Cleanup on component unmount
   }, [fetchCars]);
-  
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col items-center justify-center">
