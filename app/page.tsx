@@ -7,7 +7,6 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthState
 import { collection, addDoc, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { sendEmailVerification } from "firebase/auth";
 import { User } from "firebase/auth";
-// eslint-disable-next-line no-unused-vars
 import axios from "axios";
 
 const OPENDATASOFT_API_URL = "https://public.opendatasoft.com/api/records/1.0/search/";
@@ -83,7 +82,7 @@ export default function Home() {
             facet: "make", // Facet for car makes
           },
         });
-        const makesArray = Array.from(new Set(response.data.records.map((record: { fields: { make: any; }; }) => record.fields.make)))
+        const makesArray = Array.from(new Set(response.data.records.map((record: { fields: { make: string; }; }) => record.fields.make)))
         const uniqueMakes = Array.from(new Set(makesArray)) as string[];
         setMakes(uniqueMakes.sort()); // 
       } catch (error) {
@@ -105,7 +104,7 @@ export default function Home() {
               q: form.make, // Query for a specific make
             },
           });
-          const models = modelsResponse.data.records.map((record: { fields: { model: any; }; }) => record.fields.model);
+          const models = modelsResponse.data.records.map((record: { fields: { model: string; }; }) => record.fields.model);
           const uniqueModels = Array.from(new Set(models)) as string[];
           setModels(uniqueModels.sort());
         } catch (error) {
