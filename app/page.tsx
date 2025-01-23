@@ -7,22 +7,12 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthState
 import { collection, addDoc, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { sendEmailVerification } from "firebase/auth";
 import { User } from "firebase/auth";
+// eslint-disable-next-line no-unused-vars
 import axios from "axios";
 
 const OPENDATASOFT_API_URL = "https://public.opendatasoft.com/api/records/1.0/search/";
 
 const storage = getStorage();
-
-interface Record {
-  fields: {
-    make: string;
-  };
-}
-
-interface ApiResponse {
-  records: Record[];
-}
-
 
 interface Car {
   id?: string;
