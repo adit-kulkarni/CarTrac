@@ -7,6 +7,9 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthState
 import { collection, addDoc, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
 import { sendEmailVerification } from "firebase/auth";
 import { User } from "firebase/auth";
+import axios from "axios";
+
+const OPENDATASOFT_API_URL = "https://public.opendatasoft.com/api/records/1.0/search/";
 
 const storage = getStorage();
 
@@ -41,6 +44,9 @@ export default function Home() {
     roles: [],
   });
   
+  const [makes, setMakes] = useState<string[]>([]);
+  const [models, setModels] = useState<string[]>([]);
+  // const [carDetails, setCarDetails] = useState(null);
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [confirmSignupPassword, setConfirmSignupPassword] = useState("");
@@ -64,6 +70,51 @@ export default function Home() {
   });
   
   const [loading, setLoading] = useState(true);
+
+
+  useEffect(() => {
+    const fetchMakes = async () => {
+      try {
+        const response = await axios.get(OPENDATASOFT_API_URL, {
+          params: {
+            dataset: "all-vehicles-model",
+            rows: 500, // Limit the number of results
+            facet: "make", // Facet for car makes
+          },
+        });
+        const makesArray = Array.from(new Set(response.data.records.map((record: { fields: { make: string; }; }) => record.fields.make)))
+        const uniqueMakes = Array.from(new Set(makesArray)) as string[];
+        setMakes(uniqueMakes.sort()); // 
+      } catch (error) {
+        console.error("Error fetching car makes:", error);
+      }
+    };
+    fetchMakes();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchModels = async () => {
+      if (form.make) {
+        try {
+          const modelsResponse = await axios.get(OPENDATASOFT_API_URL, {
+            params: {
+              dataset: "all-vehicles-model",
+              rows: 100, // Limit the number of results
+              q: form.make, // Query for a specific make
+            },
+          });
+          const models = modelsResponse.data.records.map((record: { fields: { model: string; }; }) => record.fields.model);
+          const uniqueModels = Array.from(new Set(models)) as string[];
+          setModels(uniqueModels.sort());
+        } catch (error) {
+          console.error("Error fetching car models", error);
+        }
+      }
+    };
+    fetchModels();
+  }, [form.make]);
+
 
   const fetchCars = useCallback(async () => {
     if (user) {
@@ -327,25 +378,37 @@ export default function Home() {
 
       {isFormVisible && (
         <form onSubmit={handleSubmit} className="max-w-md mx-auto mb-8 bg-gray-800 p-6 rounded-lg shadow-lg">
-          <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Make"
+            <div className="mb-4">
+            <label className="block text-gray-300 font-bold mb-2">Select Make:</label>
+            <select
               value={form.make}
-              onChange={(e) => setForm({ ...form, make: e.target.value })}
+              onChange={(e) => setForm({ ...form, make: e.target.value, model: "" })}
               className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-            />
+            >
+              <option value="">Choose a Make</option>
+              {makes.map((make) => (
+                <option key={make} value={make}>
+                  {make}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="mb-4">
-            <input
-              type="text"
-              placeholder="Model"
+            <label className="block text-gray-300 font-bold mb-2">Select Model:</label>
+            <select
               value={form.model}
               onChange={(e) => setForm({ ...form, model: e.target.value })}
               className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
-            />
+            >
+              <option value="">Choose a Model</option>
+              {models.map((model) => (
+                <option key={model} value={model}>
+                  {model}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="mb-4">
             <input
