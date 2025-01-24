@@ -28,7 +28,7 @@ const OPENDATASOFT_API_URL =
 
 const storage = getStorage();
 
-interface Car {
+export interface Car {
   id?: string;
   make: string;
   model: string;
