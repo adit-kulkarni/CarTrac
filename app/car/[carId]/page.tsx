@@ -24,8 +24,8 @@ export default function CarDetails() {
 
   useEffect(() => {
     const fetchCar = async () => {
-      if (carId) {
-        const carDocRef = doc(db, "cars", carId);
+      if (carId && typeof carId === "string") {  // Add this check for carId
+        const carDocRef = doc(db, "cars", carId); // Now it should work
         const carDocSnap = await getDoc(carDocRef);
         if (carDocSnap.exists()) {
           setCar({ ...carDocSnap.data(), id: carId } as Car);
@@ -41,6 +41,7 @@ export default function CarDetails() {
     };
     fetchCar();
   }, [carId]);
+  
 
   const handleRate = (attribute: string, newRating: number) => {
     setRatings((prevRatings) => ({
