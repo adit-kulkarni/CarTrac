@@ -7,8 +7,8 @@ import { Car } from "../page";
 
 interface CarListProps {
   cars: Car[];
-  onDelete: (id: string, e: React.MouseEvent) => void;
-  onRate: (carId: string, attribute: string, newRating: number) => void;
+  onDelete: (id: string, e: React.MouseEvent<HTMLButtonElement>) => void;
+  onRate: (carId: string, attribute: string, newRating: number) => Promise<void>;
 }
 
 export default function CarList({ cars, onDelete, onRate }: CarListProps) {
