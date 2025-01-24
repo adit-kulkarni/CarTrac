@@ -8,7 +8,7 @@ import { Car } from "@/app/page";
 import StarRating from "@/app/components/StarRating";
 
 export default function CarDetails() {
-  const router = useRouter();
+  const router = useRouter(); // Used by the Go Back button
   const [car, setCar] = useState<Car | null>(null);
   const { carId } = useParams();
 
@@ -17,9 +17,9 @@ export default function CarDetails() {
     drivingExperience: number;
     stylishness: number;
   }>({
-    comfort: 0,
-    drivingExperience: 0,
-    stylishness: 0,
+    comfort: car?.comfort || 0,
+    drivingExperience: car?.drivingExperience || 0,
+    stylishness: car?.stylishness || 0,
   });
 
   useEffect(() => {
