@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -32,12 +33,21 @@ export default function CarList({ cars, onDelete, onRate }: CarListProps) {
             </h3>
             <p>Year: {car.year}</p>
             <p>Top Speed: {car.topSpeed} km/h</p>
-            <p>Rating: {car.rating}/5</p>
+            <div className="flex items-center">
+              <span className="mr-2">Rating:</span>
+              <StarRating
+                rating={car.rating}
+                onRate={(newRating) => onRate(car.id!, "rating", newRating)}
+              />
+            </div>
             <p>
               Roles: {car.roles?.length > 0 ? car.roles.join(", ") : "None"}
             </p>
             <button
-              onClick={(e) => onDelete(car.id!, e)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(car.id!, e);
+              }}
               className="mt-2 bg-red-600 text-white py-1 px-3 rounded-lg hover:bg-red-700 transition"
             >
               Delete
