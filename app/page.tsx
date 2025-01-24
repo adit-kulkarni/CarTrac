@@ -66,7 +66,6 @@ export default function Home() {
 
   const [makes, setMakes] = useState<string[]>([]);
   const [models, setModels] = useState<string[]>([]);
-  // const [carDetails, setCarDetails] = useState(null);
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [confirmSignupPassword, setConfirmSignupPassword] = useState("");
@@ -91,7 +90,7 @@ export default function Home() {
 
   const [loading, setLoading] = useState(true);
 
-  const [expandedCarId, setExpandedCarId] = useState<string | null>(null);
+  // Removed expandedCarId state
   const [ratings, setRatings] = useState<{
     [carId: string]: {
       comfort: number;
@@ -220,7 +219,7 @@ export default function Home() {
       roles: form.roles,
       id: "",
     };
-    let newCar: Car = {
+    const newCar: Car = {
       ...newCarData,
       comfort: ratings[newCarData.id]?.comfort,
       drivingExperience: ratings[newCarData.id]?.drivingExperience,
@@ -456,7 +455,6 @@ export default function Home() {
     }
     return <div className="flex">{stars}</div>;
   }
-  
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 font-[\'Playfair Display\'] p-6">
@@ -744,7 +742,7 @@ export default function Home() {
               backgroundPosition: "center",
             }}
             onClick={() => {
-              setExpandedCarId(car.id ? car.id : null); // Set to car.id if defined
+              // Removed expandedCarId logic
               if (car.id) {
                 router.push(`/car/${car.id}`);
               }
@@ -768,9 +766,12 @@ export default function Home() {
                     Top Speed: {car.topSpeed} km/h
                   </p>
                   <p className="text-gray-300">Rating: </p>
-                  <StarRating 
-                    rating={car.rating} 
-                    onRate={(newRating) => handleRate(car.id!, "rating", newRating)} />
+                  <StarRating
+                    rating={car.rating}
+                    onRate={(newRating) =>
+                      handleRate(car.id!, "rating", newRating)
+                    }
+                  />
                   <p className="text-gray-300">
                     Roles:{" "}
                     {car.roles?.length > 0 ? car.roles.join(", ") : "None"}
