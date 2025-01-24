@@ -195,16 +195,25 @@ export default function Home() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && user) {
-      const storageRef = ref(storage, `car-images/${user.uid}/${file.name}`);
+      // Create a unique filename using timestamp
+      const timestamp = Date.now();
+      const uniqueFilename = `${timestamp}-${file.name}`;
+      const storageRef = ref(storage, `car-images/${user.uid}/${uniqueFilename}`);
+      
       try {
         console.log("Uploading image...");
         const snapshot = await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(snapshot.ref);
         console.log("Image uploaded successfully. URL:", downloadURL);
-        setForm(prevForm => {
-          const newForm = { ...prevForm, image: downloadURL };
-          console.log("Updated form:", newForm);
-          return newForm;
+        
+        // Wait for state update to complete
+        await new Promise<void>((resolve) => {
+          setForm(prevForm => {
+            const newForm = { ...prevForm, image: downloadURL };
+            console.log("Updated form with image:", newForm);
+            resolve();
+            return newForm;
+          });
         });
       } catch (error) {
         console.error("Image upload failed", error);
@@ -215,6 +224,12 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!form.image) {
+      alert("Please upload an image before submitting");
+      return;
+    }
+    
     const newCarData: Car = {
       make: form.make,
       model: form.model,
