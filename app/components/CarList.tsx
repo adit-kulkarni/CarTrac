@@ -12,13 +12,15 @@ interface CarListProps {
 }
 
 export default function CarList({ cars, onDelete, onRate }: CarListProps) {
+  const router = useRouter();
+  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {cars.map((car) => (
         <div
           key={car.id}
           className="bg-gray-800 rounded-lg shadow-lg overflow-hidden cursor-pointer"
-          onClick={() => useRouter().push(`/car/${car.id}`)}
+          onClick={() => router.push(`/car/${car.id}`)}
         >
           <img
             src={car.image}
