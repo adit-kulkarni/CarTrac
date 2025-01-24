@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { auth, db } from "../lib/firebaseConfig";
+import CarList from "./components/CarList";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   signInWithEmailAndPassword,
