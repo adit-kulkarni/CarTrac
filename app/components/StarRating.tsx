@@ -12,9 +12,7 @@ export default function StarRating({ rating, onRate }: StarRatingProps) {
       <span
         key={i}
         onClick={() => onRate(i)}
-        className={`text-${i <= rating ? "yellow-500" : "gray-400"} cursor-pointer ${
-          i <= rating ? "filled" : ""
-        }`}
+        className={`${i <= rating ? "text-yellow-500" : "text-gray-400"} cursor-pointer`}
       >
         ★
       </span>,
