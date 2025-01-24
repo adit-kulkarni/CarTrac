@@ -20,7 +20,7 @@ export default function CarList({ cars, onDelete, onRate }: CarListProps) {
         <div
           key={car.id}
           className="bg-gray-800 rounded-lg shadow-lg overflow-hidden cursor-pointer"
-          onClick={() => router.push(`/car/${car.id}`)}
+          onClick={() => car.id && router.push(`/car/${car.id}`)}
         >
           <img
             src={car.image}
@@ -37,7 +37,7 @@ export default function CarList({ cars, onDelete, onRate }: CarListProps) {
               <span className="mr-2">Rating:</span>
               <StarRating
                 rating={car.rating}
-                onRate={(newRating) => onRate(car.id!, "rating", newRating)}
+                onRate={(newRating) => car.id && onRate(car.id, "rating", newRating)}
               />
             </div>
             <p>
@@ -46,7 +46,7 @@ export default function CarList({ cars, onDelete, onRate }: CarListProps) {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onDelete(car.id!, e);
+                car.id && onDelete(car.id, e);
               }}
               className="mt-2 bg-red-600 text-white py-1 px-3 rounded-lg hover:bg-red-700 transition"
             >

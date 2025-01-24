@@ -3,23 +3,22 @@
 
 interface StarRatingProps {
   rating: number;
-  onRate: (newRating: number) => void;
+  onRate?: (rating: number) => void;
 }
 
 export default function StarRating({ rating, onRate }: StarRatingProps) {
-  const stars = [];
-  for (let i = 1; i <= 5; i++) {
-    stars.push(
-      <span
-        key={i}
-        onClick={() => onRate(i)}
-        className={`cursor-pointer ${
-          i <= rating ? "text-yellow-500" : "text-gray-400"
-        }`}
-      >
-        ★
-      </span>,
-    );
-  }
+  const stars = [...Array(5)].map((_, index) => (
+    <span
+      key={index}
+      onClick={() => onRate?.(index + 1)}
+      style={{ cursor: onRate ? 'pointer' : 'default' }}
+      className={`text-2xl ${
+        index < rating ? 'text-yellow-500' : 'text-gray-400'
+      }`}
+    >
+      ★
+    </span>
+  ));
+
   return <div className="flex">{stars}</div>;
 }
