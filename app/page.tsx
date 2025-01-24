@@ -468,8 +468,8 @@ export default function Home() {
         <span
           key={i}
           onClick={() => onRate(i)}
-          className={`text-yellow-500 cursor-pointer ${
-            i <= rating ? "filled" : ""
+          className={`cursor-pointer ${
+            i <= rating ? "text-yellow-500" : "text-gray-400"
           }`}
         >
           ★
