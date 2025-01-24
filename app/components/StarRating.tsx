@@ -1,3 +1,4 @@
+
 "use client";
 
 interface StarRatingProps {
@@ -19,5 +20,4 @@ export default function StarRating({ rating, onRate }: StarRatingProps) {
     );
   }
   return <div className="flex">{stars}</div>;
-}
 }
