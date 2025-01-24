@@ -208,8 +208,7 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newCarData = {
-      // Type newCar with Car interface
+    const newCarData: Car = {
       make: form.make,
       model: form.model,
       year: Number(form.year),
@@ -217,13 +216,9 @@ export default function Home() {
       rating: Number(form.rating),
       image: form.image,
       roles: form.roles,
-      id: "",
-    };
-    const newCar: Car = {
-      ...newCarData,
-      comfort: ratings[newCarData.id]?.comfort,
-      drivingExperience: ratings[newCarData.id]?.drivingExperience,
-      stylishness: ratings[newCarData.id]?.stylishness,
+      comfort: 0,
+      drivingExperience: 0,
+      stylishness: 0
     };
     if (user) {
       try {
