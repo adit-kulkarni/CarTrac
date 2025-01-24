@@ -197,11 +197,18 @@ export default function Home() {
     if (file && user) {
       const storageRef = ref(storage, `car-images/${user.uid}/${file.name}`);
       try {
+        console.log("Uploading image...");
         const snapshot = await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(snapshot.ref);
-        setForm({ ...form, image: downloadURL });
+        console.log("Image uploaded successfully. URL:", downloadURL);
+        setForm(prevForm => {
+          const newForm = { ...prevForm, image: downloadURL };
+          console.log("Updated form:", newForm);
+          return newForm;
+        });
       } catch (error) {
         console.error("Image upload failed", error);
+        alert("Failed to upload image. Please try again.");
       }
     }
   };
