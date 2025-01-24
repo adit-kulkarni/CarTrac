@@ -732,9 +732,7 @@ export default function Home() {
             key={index}
             className={`relative bg-gray-800 p-6 rounded-lg shadow-lg h-48 flex flex-col items-start justify-center hover:translate-y-[-2px] transition duration-300 ease-in-out cursor-pointer`}
             style={{
-              backgroundImage: `url('${car.image}')`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
+              backgroundColor: '#1f2937', // Fallback background color
             }}
             onClick={() => {
               // Removed expandedCarId logic
@@ -746,7 +744,7 @@ export default function Home() {
             <div
               className="absolute inset-0 bg-black bg-opacity-30 p-4 rounded flex flex-col items-start justify-center"
               style={{
-                backgroundImage: `url('${car.image}')`,
+                backgroundImage: car.image ? `url('${car.image}')` : 'none',
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
