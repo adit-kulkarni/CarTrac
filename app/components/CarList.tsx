@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useRouter } from "next/navigation";
 import StarRating from "./StarRating";
 import { Car } from "../page";
 
@@ -12,8 +11,6 @@ interface CarListProps {
 }
 
 export default function CarList({ cars, onDelete, onRate }: CarListProps) {
-  const router = useRouter();
-  
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {cars.map((car) => (
