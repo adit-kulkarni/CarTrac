@@ -8,7 +8,7 @@ import { Car } from "@/app/page";
 import StarRating from "@/app/components/StarRating";
 
 export default function CarDetails() {
-  const router = useRouter(); // Used by the Go Back button
+  const router = useRouter();
   const [car, setCar] = useState<Car | null>(null);
   const { carId } = useParams();
 
@@ -17,15 +17,15 @@ export default function CarDetails() {
     drivingExperience: number;
     stylishness: number;
   }>({
-    comfort: car?.comfort || 0,
-    drivingExperience: car?.drivingExperience || 0,
-    stylishness: car?.stylishness || 0,
+    comfort: 0,
+    drivingExperience: 0,
+    stylishness: 0,
   });
 
   useEffect(() => {
     const fetchCar = async () => {
-      if (carId) {
-        const carDocRef = doc(db, "cars", carId);
+      if (carId && typeof carId === "string") {  // Add this check for carId
+        const carDocRef = doc(db, "cars", carId); // Now it should work
         const carDocSnap = await getDoc(carDocRef);
         if (carDocSnap.exists()) {
           setCar({ ...carDocSnap.data(), id: carId } as Car);
@@ -41,6 +41,7 @@ export default function CarDetails() {
     };
     fetchCar();
   }, [carId]);
+  
 
   const handleRate = (attribute: string, newRating: number) => {
     setRatings((prevRatings) => ({

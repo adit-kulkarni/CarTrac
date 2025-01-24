@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { auth, db } from "../lib/firebaseConfig";
-import CarList from "./components/CarList";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   signInWithEmailAndPassword,
@@ -44,6 +43,8 @@ export interface Car {
 }
 
 export default function Home() {
+  const router = useRouter(); // Initialize useRouter
+
   const [cars, setCars] = useState<Car[]>([]);
   const [form, setForm] = useState<{
     make: string;
@@ -90,7 +91,13 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   // Removed expandedCarId state
-  
+  const [ratings, setRatings] = useState<{
+    [carId: string]: {
+      comfort: number;
+      drivingExperience: number;
+      stylishness: number;
+    };
+  }>({});
 
   useEffect(() => {
     const fetchMakes = async () => {
@@ -188,42 +195,21 @@ export default function Home() {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file && user) {
-      // Create a unique filename using timestamp
-      const timestamp = Date.now();
-      const uniqueFilename = `${timestamp}-${file.name}`;
-      const storageRef = ref(storage, `car-images/${user.uid}/${uniqueFilename}`);
-
+      const storageRef = ref(storage, `car-images/${user.uid}/${file.name}`);
       try {
-        console.log("Uploading image...");
         const snapshot = await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(snapshot.ref);
-        console.log("Image uploaded successfully. URL:", downloadURL);
-
-        // Wait for state update to complete
-        await new Promise<void>((resolve) => {
-          setForm(prevForm => {
-            const newForm = { ...prevForm, image: downloadURL };
-            console.log("Updated form with image:", newForm);
-            resolve();
-            return newForm;
-          });
-        });
+        setForm({ ...form, image: downloadURL });
       } catch (error) {
         console.error("Image upload failed", error);
-        alert("Failed to upload image. Please try again.");
       }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!form.image) {
-      alert("Please upload an image before submitting");
-      return;
-    }
-
-    const newCarData: Car = {
+    const newCarData = {
+      // Type newCar with Car interface
       make: form.make,
       model: form.model,
       year: Number(form.year),
@@ -231,19 +217,23 @@ export default function Home() {
       rating: Number(form.rating),
       image: form.image,
       roles: form.roles,
-      comfort: 0,
-      drivingExperience: 0,
-      stylishness: 0
+      id: "",
+    };
+    const newCar: Car = {
+      ...newCarData,
+      comfort: ratings[newCarData.id]?.comfort,
+      drivingExperience: ratings[newCarData.id]?.drivingExperience,
+      stylishness: ratings[newCarData.id]?.stylishness,
     };
     if (user) {
       try {
         const carCollection = collection(db, "cars");
         const docRef = await addDoc(carCollection, {
-          ...newCarData,
+          ...newCar,
           userId: user.uid,
         });
-        const carWithId = { ...newCarData, id: docRef.id }; // Create new object with ID
-        setCars((prevCars) => [...prevCars, carWithId]);
+        newCar.id = docRef.id; // Assign the generated document ID
+        setCars((prevCars) => [...prevCars, newCar]);
       } catch (error) {
         console.error("Error adding car:", error);
       }
@@ -261,17 +251,11 @@ export default function Home() {
     setIsFormVisible(false);
   };
 
-  const deleteCar = async (carId: string, e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent triggering the card click
+  const deleteCar = async (carId: string) => {
     if (user) {
-      try {
-        const carDoc = doc(db, "cars", carId);
-        await deleteDoc(carDoc);
-        setCars((prevCars) => prevCars.filter((car) => car.id !== carId));
-      } catch (error) {
-        console.error("Error deleting car:", error);
-        alert("Failed to delete car. Please try again.");
-      }
+      const carDoc = doc(db, "cars", carId);
+      await deleteDoc(carDoc);
+      setCars((prevCars) => prevCars.filter((car) => car.id !== carId));
     }
   };
 
@@ -448,7 +432,29 @@ export default function Home() {
     }));
   };
 
-  
+  function StarRating({
+    rating,
+    onRate,
+  }: {
+    rating: number;
+    onRate: (newRating: number) => void;
+  }) {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      stars.push(
+        <span
+          key={i}
+          onClick={() => onRate(i)}
+          className={`text-yellow-500 cursor-pointer ${
+            i <= rating ? "filled" : ""
+          }`}
+        >
+          ★
+        </span>,
+      );
+    }
+    return <div className="flex">{stars}</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 font-[\'Playfair Display\'] p-6">
@@ -725,11 +731,65 @@ export default function Home() {
       </div>
 
       <h2 className="text-3xl font-semibold mb-6 tracking-wide">Cars</h2>
-      <CarList 
-        cars={sortedAndFilteredCars}
-        onDelete={deleteCar}
-        onRate={handleRate}
-      />
+      <div className="grid grid-cols-1 gap-6">
+        {sortedAndFilteredCars.map((car, index) => (
+          <div
+            key={index}
+            className={`relative bg-gray-800 p-6 rounded-lg shadow-lg h-48 flex flex-col items-start justify-center hover:translate-y-[-2px] transition duration-300 ease-in-out cursor-pointer`}
+            style={{
+              backgroundImage: `url('${car.image}')`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+            onClick={() => {
+              // Removed expandedCarId logic
+              if (car.id) {
+                router.push(`/car/${car.id}`);
+              }
+            }}
+          >
+            <div
+              className="absolute inset-0 bg-black bg-opacity-30 p-4 rounded flex flex-col items-start justify-center"
+              style={{
+                backgroundImage: `url('${car.image}')`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              <div className="flex flex-row w-full">
+                <div className="flex flex-col w-full">
+                  <h3 className="text-xl font-bold text-white">
+                    {car.make} {car.model}
+                  </h3>
+                  <p className="text-gray-300">Year: {car.year}</p>
+                  <p className="text-gray-300">
+                    Top Speed: {car.topSpeed} km/h
+                  </p>
+                  <p className="text-gray-300">Rating: </p>
+                  <StarRating
+                    rating={car.rating}
+                    onRate={(newRating) =>
+                      handleRate(car.id!, "rating", newRating)
+                    }
+                  />
+                  <p className="text-gray-300">
+                    Roles:{" "}
+                    {car.roles?.length > 0 ? car.roles.join(", ") : "None"}
+                  </p>
+                </div>
+                <div className="flex flex-row-reverse items-start">
+                  <button
+                    onClick={() => deleteCar(car.id!)}
+                    className="mt-4 bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600 transition"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
