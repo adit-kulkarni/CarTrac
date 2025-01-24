@@ -270,9 +270,15 @@ export default function Home() {
 
   const deleteCar = async (carId: string) => {
     if (user) {
-      const carDoc = doc(db, "cars", carId);
-      await deleteDoc(carDoc);
-      setCars((prevCars) => prevCars.filter((car) => car.id !== carId));
+      try {
+        const carDoc = doc(db, "cars", carId);
+        await deleteDoc(carDoc);
+        setCars((prevCars) => prevCars.filter((car) => car.id !== carId));
+        window.location.href = '/'; // Force navigation to home
+      } catch (error) {
+        console.error("Error deleting car:", error);
+        alert("Failed to delete car. Please try again.");
+      }
     }
   };
 
