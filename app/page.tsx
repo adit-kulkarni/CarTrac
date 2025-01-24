@@ -90,13 +90,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   // Removed expandedCarId state
-  const [ratings, setRatings] = useState<{
-    [carId: string]: {
-      comfort: number;
-      drivingExperience: number;
-      stylishness: number;
-    };
-  }>({});
+  
 
   useEffect(() => {
     const fetchMakes = async () => {
