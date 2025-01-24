@@ -3,7 +3,7 @@
 
 interface StarRatingProps {
   rating: number;
-  onRate: (rating: number) => void;
+  onRate: (newRating: number) => void;
 }
 
 export default function StarRating({ rating, onRate }: StarRatingProps) {
@@ -13,7 +13,9 @@ export default function StarRating({ rating, onRate }: StarRatingProps) {
       <span
         key={i}
         onClick={() => onRate(i)}
-        className={`${i <= rating ? "text-yellow-500" : "text-gray-400"} cursor-pointer`}
+        className={`cursor-pointer ${
+          i <= rating ? "text-yellow-500" : "text-gray-400"
+        }`}
       >
         ★
       </span>,

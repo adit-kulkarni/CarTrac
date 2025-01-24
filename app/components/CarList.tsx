@@ -1,6 +1,9 @@
 
 "use client";
 
+
+"use client";
+
 import { useRouter } from "next/navigation";
 import StarRating from "./StarRating";
 import { Car } from "../page";
