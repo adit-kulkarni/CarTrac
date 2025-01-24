@@ -199,13 +199,13 @@ export default function Home() {
       const timestamp = Date.now();
       const uniqueFilename = `${timestamp}-${file.name}`;
       const storageRef = ref(storage, `car-images/${user.uid}/${uniqueFilename}`);
-      
+
       try {
         console.log("Uploading image...");
         const snapshot = await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(snapshot.ref);
         console.log("Image uploaded successfully. URL:", downloadURL);
-        
+
         // Wait for state update to complete
         await new Promise<void>((resolve) => {
           setForm(prevForm => {
@@ -224,12 +224,12 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!form.image) {
       alert("Please upload an image before submitting");
       return;
     }
-    
+
     const newCarData: Car = {
       make: form.make,
       model: form.model,
