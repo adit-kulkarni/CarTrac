@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebaseConfig";
-import { doc, getDoc, updateDoc, collection } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { useParams, useRouter } from "next/navigation";
 import { Car } from "@/app/page";
 import StarRating from "@/app/components/StarRating";
