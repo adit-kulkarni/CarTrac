@@ -90,7 +90,7 @@ export default function Home() {
 
   const [loading, setLoading] = useState(true);
 
-  // Removed expandedCarId state
+  const [expandedCarId, setExpandedCarId] = useState<string | null>(null);
   const [ratings, setRatings] = useState<{
     [carId: string]: {
       comfort: number;
@@ -742,7 +742,7 @@ export default function Home() {
               backgroundPosition: "center",
             }}
             onClick={() => {
-              // Removed expandedCarId logic
+              setExpandedCarId(car.id ? car.id : null); // Set to car.id if defined
               if (car.id) {
                 router.push(`/car/${car.id}`);
               }
