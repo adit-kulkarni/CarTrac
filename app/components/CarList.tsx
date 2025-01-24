@@ -2,6 +2,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import StarRating from "./StarRating";
 import { Car } from "../page";
 
@@ -19,11 +20,13 @@ export default function CarList({ cars, onDelete, onRate }: CarListProps) {
         <div
           key={car.id}
           className="bg-gray-800 rounded-lg shadow-lg overflow-hidden cursor-pointer"
-          onClick={() => car.id && router.push(`/car/${car.id}`)}
+          onClick={() => { if (car.id) router.push(`/car/${car.id}`); }}
         >
-          <img
+          <Image
             src={car.image}
             alt={`${car.make} ${car.model}`}
+            width={400}
+            height={300}
             className="w-full h-48 object-cover"
           />
           <div className="p-4">
