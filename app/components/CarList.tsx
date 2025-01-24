@@ -39,7 +39,11 @@ export default function CarList({ cars, onDelete, onRate }: CarListProps) {
               <span className="mr-2">Rating:</span>
               <StarRating
                 rating={car.rating}
-                onRate={(newRating) => car.id && onRate(car.id, "rating", newRating)}
+                onRate={(newRating) => {
+                  if (car.id) {
+                    onRate(car.id, "rating", newRating);
+                  }
+                }}
               />
             </div>
             <p>
