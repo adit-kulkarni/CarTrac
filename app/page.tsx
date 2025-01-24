@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { auth, db } from "../lib/firebaseConfig";
 import CarList from "./components/CarList";
+import StarRating from "./components/StarRating";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   signInWithEmailAndPassword,
@@ -456,29 +457,7 @@ export default function Home() {
     }));
   };
 
-  function StarRating({
-    rating,
-    onRate,
-  }: {
-    rating: number;
-    onRate: (newRating: number) => void;
-  }) {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      stars.push(
-        <span
-          key={i}
-          onClick={() => onRate(i)}
-          className={`cursor-pointer ${
-            i <= rating ? "text-yellow-500" : "text-gray-400"
-          }`}
-        >
-          ★
-        </span>,
-      );
-    }
-    return <div className="flex">{stars}</div>;
-  }
+  
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 font-[\'Playfair Display\'] p-6">
