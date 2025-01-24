@@ -209,7 +209,8 @@ export default function Home() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newCar = {
+    const newCarData = {
+      // Type newCar with Car interface
       make: form.make,
       model: form.model,
       year: Number(form.year),
@@ -218,9 +219,12 @@ export default function Home() {
       image: form.image,
       roles: form.roles,
       id: "",
-      comfort: ratings[newCar.id]?.comfort,
-      drivingExperience: ratings[newCar.id]?.drivingExperience,
-      stylishness: ratings[newCar.id]?.stylishness,
+    };
+    let newCar: Car = {
+      ...newCarData,
+      comfort: ratings[newCarData.id]?.comfort,
+      drivingExperience: ratings[newCarData.id]?.drivingExperience,
+      stylishness: ratings[newCarData.id]?.stylishness,
     };
     if (user) {
       try {
@@ -740,7 +744,7 @@ export default function Home() {
               backgroundPosition: "center",
             }}
             onClick={() => {
-              setExpandedCarId(expandedCarId === car.id ? null : car.id);
+              setExpandedCarId(car.id ? car.id : null); // Set to car.id if defined
               if (car.id) {
                 router.push(`/car/${car.id}`);
               }
