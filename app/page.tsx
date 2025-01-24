@@ -224,11 +224,11 @@ export default function Home() {
       try {
         const carCollection = collection(db, "cars");
         const docRef = await addDoc(carCollection, {
-          ...newCar,
+          ...newCarData,
           userId: user.uid,
         });
-        newCar.id = docRef.id; // Assign the generated document ID
-        setCars((prevCars) => [...prevCars, newCar]);
+        const carWithId = { ...newCarData, id: docRef.id }; // Create new object with ID
+        setCars((prevCars) => [...prevCars, carWithId]);
       } catch (error) {
         console.error("Error adding car:", error);
       }
