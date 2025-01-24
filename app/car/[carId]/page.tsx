@@ -25,7 +25,7 @@ export default function CarDetails() {
   useEffect(() => {
     const fetchCar = async () => {
       if (carId) {
-        const carDocRef = doc(collection(db, "cars"), carId);
+        const carDocRef = doc(db, "cars", carId);
         const carDocSnap = await getDoc(carDocRef);
         if (carDocSnap.exists()) {
           setCar({ ...carDocSnap.data(), id: carId } as Car);
