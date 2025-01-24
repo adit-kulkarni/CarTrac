@@ -268,18 +268,16 @@ export default function Home() {
     setIsFormVisible(false);
   };
 
-  const deleteCar = async (carId: string) => {
+  const deleteCar = async (carId: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the card click
     if (user) {
       try {
-        setLoading(true);
         const carDoc = doc(db, "cars", carId);
         await deleteDoc(carDoc);
         setCars((prevCars) => prevCars.filter((car) => car.id !== carId));
-        setLoading(false);
       } catch (error) {
         console.error("Error deleting car:", error);
         alert("Failed to delete car. Please try again.");
-        setLoading(false);
       }
     }
   };
@@ -802,7 +800,7 @@ export default function Home() {
                 </div>
                 <div className="flex flex-row-reverse items-start">
                   <button
-                    onClick={() => deleteCar(car.id!)}
+                    onClick={(e) => deleteCar(car.id!, e)}
                     className="mt-4 bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600 transition"
                   >
                     Delete
