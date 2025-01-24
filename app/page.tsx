@@ -419,15 +419,15 @@ export default function Home() {
     return 0;
   });
 
-  const handleRate = (carId: string, attribute: string, newRating: number) => {
-    setRatings((prevRatings) => ({
-      ...prevRatings,
-      [carId]: {
-        ...prevRatings[carId],
-        [attribute]: newRating,
-      },
-    }));
-  };
+  // const handleRate = (carId: string, attribute: string, newRating: number) => {
+  //   setRatings((prevRatings) => ({
+  //     ...prevRatings,
+  //     [carId]: {
+  //       ...prevRatings[carId],
+  //       [attribute]: newRating,
+  //     },
+  //   }));
+  // };
 
   function StarRating({
     rating,
