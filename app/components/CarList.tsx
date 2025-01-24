@@ -1,7 +1,3 @@
-
-"use client";
-
-
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -10,7 +6,7 @@ import { Car } from "../page";
 
 interface CarListProps {
   cars: Car[];
-  onDelete: (carId: string, e: React.MouseEvent) => void;
+  onDelete: (id: string, e: React.MouseEvent) => void;
   onRate: (carId: string, attribute: string, newRating: number) => void;
 }
 
@@ -18,58 +14,34 @@ export default function CarList({ cars, onDelete, onRate }: CarListProps) {
   const router = useRouter();
 
   return (
-    <div className="grid grid-cols-1 gap-6">
-      {cars.map((car, index) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {cars.map((car) => (
         <div
-          key={index}
-          className={`relative bg-gray-800 p-6 rounded-lg shadow-lg h-48 flex flex-col items-start justify-center hover:translate-y-[-2px] transition duration-300 ease-in-out cursor-pointer`}
-          style={{
-            backgroundColor: '#1f2937',
-          }}
-          onClick={() => {
-            if (car.id) {
-              router.push(`/car/${car.id}`);
-            }
-          }}
+          key={car.id}
+          className="bg-gray-800 rounded-lg shadow-lg overflow-hidden cursor-pointer"
+          onClick={() => router.push(`/car/${car.id}`)}
         >
-          <div
-            className="absolute inset-0 bg-black bg-opacity-30 p-4 rounded flex flex-col items-start justify-center"
-            style={{
-              backgroundImage: car.image ? `url('${car.image}')` : 'none',
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          >
-            <div className="flex flex-row w-full">
-              <div className="flex flex-col w-full">
-                <h3 className="text-xl font-bold text-white">
-                  {car.make} {car.model}
-                </h3>
-                <p className="text-gray-300">Year: {car.year}</p>
-                <p className="text-gray-300">
-                  Top Speed: {car.topSpeed} km/h
-                </p>
-                <p className="text-gray-300">Rating: </p>
-                <StarRating
-                  rating={car.rating}
-                  onRate={(newRating) =>
-                    onRate(car.id!, "rating", newRating)
-                  }
-                />
-                <p className="text-gray-300">
-                  Roles:{" "}
-                  {car.roles?.length > 0 ? car.roles.join(", ") : "None"}
-                </p>
-              </div>
-              <div className="flex flex-row-reverse items-start">
-                <button
-                  onClick={(e) => onDelete(car.id!, e)}
-                  className="mt-4 bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600 transition"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
+          <img
+            src={car.image}
+            alt={`${car.make} ${car.model}`}
+            className="w-full h-48 object-cover"
+          />
+          <div className="p-4">
+            <h3 className="text-xl font-bold">
+              {car.make} {car.model}
+            </h3>
+            <p>Year: {car.year}</p>
+            <p>Top Speed: {car.topSpeed} km/h</p>
+            <p>Rating: {car.rating}/5</p>
+            <p>
+              Roles: {car.roles?.length > 0 ? car.roles.join(", ") : "None"}
+            </p>
+            <button
+              onClick={(e) => onDelete(car.id!, e)}
+              className="mt-2 bg-red-600 text-white py-1 px-3 rounded-lg hover:bg-red-700 transition"
+            >
+              Delete
+            </button>
           </div>
         </div>
       ))}

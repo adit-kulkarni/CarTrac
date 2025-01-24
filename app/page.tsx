@@ -44,8 +44,6 @@ export interface Car {
 }
 
 export default function Home() {
-  const router = useRouter(); // Initialize useRouter
-
   const [cars, setCars] = useState<Car[]>([]);
   const [form, setForm] = useState<{
     make: string;
