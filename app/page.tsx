@@ -419,22 +419,22 @@ export default function Home() {
     return 0;
   });
 
-  // const handleRate = (carId: string, attribute: string, newRating: number) => {
-  //   setRatings((prevRatings) => ({
-  //     ...prevRatings,
-  //     [carId]: {
-  //       ...prevRatings[carId],
-  //       [attribute]: newRating,
-  //     },
-  //   }));
-  // };
+  const handleRate = (carId: string, attribute: string, newRating: number) => {
+    setRatings((prevRatings) => ({
+      ...prevRatings,
+      [carId]: {
+        ...prevRatings[carId],
+        [attribute]: newRating,
+      },
+    }));
+  };
 
   function StarRating({
     rating,
     onRate,
   }: {
     rating: number;
-    onRate: (rating: number) => void;
+    onRate: (newRating: number) => void;
   }) {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -442,7 +442,9 @@ export default function Home() {
         <span
           key={i}
           onClick={() => onRate(i)}
-          className={`text-yellow-500 cursor-pointer ${i <= rating ? "filled" : ""}`}
+          className={`text-yellow-500 cursor-pointer ${
+            i <= rating ? "filled" : ""
+          }`}
         >
           ★
         </span>,
@@ -450,6 +452,7 @@ export default function Home() {
     }
     return <div className="flex">{stars}</div>;
   }
+  
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 font-[\'Playfair Display\'] p-6">
@@ -761,7 +764,9 @@ export default function Home() {
                     Top Speed: {car.topSpeed} km/h
                   </p>
                   <p className="text-gray-300">Rating: </p>
-                  <StarRating rating={car.rating} onRate={() => {}} />
+                  <StarRating 
+                    rating={car.rating} 
+                    onRate={(newRating) => handleRate(car.id!, "rating", newRating)} />
                   <p className="text-gray-300">
                     Roles:{" "}
                     {car.roles?.length > 0 ? car.roles.join(", ") : "None"}
