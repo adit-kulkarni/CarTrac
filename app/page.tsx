@@ -79,7 +79,7 @@ export default function Home() {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get('addNew') === 'true') {
+    if (searchParams.get("addNew") === "true") {
       setIsFormVisible(true);
     }
   }, []);
@@ -101,11 +101,11 @@ export default function Home() {
   useEffect(() => {
     const handleRouteChange = () => {
       const searchParams = new URLSearchParams(window.location.search);
-      setIsFormVisible(searchParams.get('addNew') === 'true');
+      setIsFormVisible(searchParams.get("addNew") === "true");
     };
 
-    window.addEventListener('popstate', handleRouteChange);
-    return () => window.removeEventListener('popstate', handleRouteChange);
+    window.addEventListener("popstate", handleRouteChange);
+    return () => window.removeEventListener("popstate", handleRouteChange);
   }, []);
 
   useEffect(() => {
@@ -278,7 +278,7 @@ export default function Home() {
       roles: [],
     });
     setIsFormVisible(false);
-    router.push('/'); // Clear the addNew parameter from URL
+    router.push("/"); // Clear the addNew parameter from URL
   };
 
   const deleteCar = async (carId: string, e: React.MouseEvent) => {
@@ -458,16 +458,20 @@ export default function Home() {
     return 0;
   });
 
-  const handleRate = async (carId: string, attribute: string, newRating: number) => {
+  const handleRate = async (
+    carId: string,
+    attribute: string,
+    newRating: number,
+  ) => {
     try {
       const carRef = doc(db, "cars", carId);
       await updateDoc(carRef, {
-        [attribute]: newRating
+        [attribute]: newRating,
       });
-      setCars(prevCars => 
-        prevCars.map(car => 
-          car.id === carId ? { ...car, [attribute]: newRating } : car
-        )
+      setCars((prevCars) =>
+        prevCars.map((car) =>
+          car.id === carId ? { ...car, [attribute]: newRating } : car,
+        ),
       );
     } catch (error) {
       console.error("Error updating rating:", error);
@@ -475,7 +479,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 font-['Montserrat'] p-6">
+    <div className="min-h-screen bg-gray-900 text-gray-200 font-['Playfair Display'] p-6">
       <h1 className="text-4xl font-extrabold text-center mb-6 tracking-wide">
         Car Tracker
       </h1>
