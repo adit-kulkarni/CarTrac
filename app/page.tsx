@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { auth, db } from "../lib/firebaseConfig";
 import CarList from "./components/CarList";
+import FilterSortPanel from "./components/FilterSortPanel";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   signInWithEmailAndPassword,
@@ -581,148 +582,12 @@ export default function Home() {
         </form>
       )}
 
-      <div className="mb-6">
-        <label className="text-xl text-gray-200 font-bold mr-4">
-          Filter By Year:
-        </label>
-        <input
-          type="range"
-          min="1900"
-          max="2100"
-          value={filters.year[0]}
-          onChange={(e) =>
-            setFilters({
-              ...filters,
-              year: [Number(e.target.value), filters.year[1]],
-            })
-          }
-          className="mr-2"
-        />
-        <input
-          type="range"
-          min="1900"
-          max="2100"
-          value={filters.year[1]}
-          onChange={(e) =>
-            setFilters({
-              ...filters,
-              year: [filters.year[0], Number(e.target.value)],
-            })
-          }
-        />
-        <span className="text-gray-300 ml-2">
-          {filters.year[0]} - {filters.year[1]}
-        </span>
-      </div>
-
-      <div className="mb-6">
-        <label className="text-xl text-gray-200 font-bold mr-4">
-          Filter By Speed:
-        </label>
-        <input
-          type="range"
-          min="0"
-          max="500"
-          value={filters.topSpeed[0]}
-          onChange={(e) =>
-            setFilters({
-              ...filters,
-              topSpeed: [Number(e.target.value), filters.topSpeed[1]],
-            })
-          }
-          className="mr-2"
-        />
-        <input
-          type="range"
-          min="0"
-          max="500"
-          value={filters.topSpeed[1]}
-          onChange={(e) =>
-            setFilters({
-              ...filters,
-              topSpeed: [filters.topSpeed[0], Number(e.target.value)],
-            })
-          }
-        />
-        <span className="text-gray-300 ml-2">
-          {filters.topSpeed[0]} - {filters.topSpeed[1]} km/h
-        </span>
-      </div>
-
-      <div className="mb-6">
-        <label className="text-xl text-gray-200 font-bold mr-4">
-          Filter By Rating:
-        </label>
-        <input
-          type="range"
-          min="1"
-          max="5"
-          step="0.1"
-          value={filters.rating[0]}
-          onChange={(e) =>
-            setFilters({
-              ...filters,
-              rating: [Number(e.target.value), filters.rating[1]],
-            })
-          }
-          className="mr-2"
-        />
-        <input
-          type="range"
-          min="1"
-          max="5"
-          step="0.1"
-          value={filters.rating[1]}
-          onChange={(e) =>
-            setFilters({
-              ...filters,
-              rating: [filters.rating[0], Number(e.target.value)],
-            })
-          }
-        />
-        <span className="text-gray-300 ml-2">
-          {filters.rating[0]} - {filters.rating[1]}
-        </span>
-      </div>
-
-      <div className="mb-6">
-        <label className="text-xl text-gray-200 font-bold mr-4">
-          Filter By Roles:
-        </label>
-        {["Driver", "Passenger", "Observed"].map((role) => (
-          <div key={role} className="inline-flex items-center mr-4">
-            <input
-              type="checkbox"
-              value={role}
-              checked={filters.roles.includes(role)}
-              onChange={() =>
-                setFilters((prevFilters) => ({
-                  ...prevFilters,
-                  roles: prevFilters.roles.includes(role)
-                    ? prevFilters.roles.filter((r) => r !== role)
-                    : [...prevFilters.roles, role],
-                }))
-              }
-              className="mr-2"
-            />
-            <span className="text-gray-300">{role}</span>
-          </div>
-        ))}
-      </div>
-
-      <div className="mb-6">
-        <label className="text-xl text-gray-200 font-bold mr-4">Sort By:</label>
-        <select
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value as keyof Car)}
-          className="p-2 bg-gray-800 text-gray-200 rounded"
-        >
-          <option value="">None</option>
-          <option value="year">Year</option>
-          <option value="topSpeed">Top Speed</option>
-          <option value="rating">Rating</option>
-        </select>
-      </div>
+      <FilterSortPanel
+        filters={filters}
+        setFilters={setFilters}
+        sortOption={sortOption}
+        setSortOption={setSortOption}
+      />
 
       <h2 className="text-3xl font-semibold mb-6 tracking-wide">Cars</h2>
       <CarList 
