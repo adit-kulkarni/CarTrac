@@ -19,6 +19,7 @@ import {
   getDocs,
   deleteDoc,
   doc,
+  updateDoc,
 } from "firebase/firestore";
 import { sendEmailVerification } from "firebase/auth";
 import { User } from "firebase/auth";
@@ -277,6 +278,7 @@ export default function Home() {
       roles: [],
     });
     setIsFormVisible(false);
+    router.push('/'); // Clear the addNew parameter from URL
   };
 
   const deleteCar = async (carId: string, e: React.MouseEvent) => {
@@ -456,14 +458,20 @@ export default function Home() {
     return 0;
   });
 
-  const handleRate = (carId: string, attribute: string, newRating: number) => {
-    setRatings((prevRatings) => ({
-      ...prevRatings,
-      [carId]: {
-        ...prevRatings[carId],
-        [attribute]: newRating,
-      },
-    }));
+  const handleRate = async (carId: string, attribute: string, newRating: number) => {
+    try {
+      const carRef = doc(db, "cars", carId);
+      await updateDoc(carRef, {
+        [attribute]: newRating
+      });
+      setCars(prevCars => 
+        prevCars.map(car => 
+          car.id === carId ? { ...car, [attribute]: newRating } : car
+        )
+      );
+    } catch (error) {
+      console.error("Error updating rating:", error);
+    }
   };
 
   return (
