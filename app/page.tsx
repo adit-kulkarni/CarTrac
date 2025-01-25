@@ -481,7 +481,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 p-6">
       <h1 className="text-4xl font-extrabold text-center mb-6 tracking-wide">
-        Car Tracker
+        CarTrac
       </h1>
       <button
         onClick={handleLogout}
@@ -629,7 +629,9 @@ export default function Home() {
         setSortOption={setSortOption}
       />
 
-      <h2 className="text-3xl font-semibold mb-6 tracking-wide">Cars</h2>
+      <h2 className="text-3xl font-semibold mb-6 tracking-wide">
+        Your Car Collection
+      </h2>
       <CarList
         cars={sortedAndFilteredCars}
         onDelete={deleteCar}
