@@ -1,0 +1,45 @@
+Error: React has detected a change in the order of Hooks called by Home. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://react.dev/link/rules-of-hooks
+
+   Previous render            Next render
+   ------------------------------------------------------
+1. useState                   useState
+2. useState                   useState
+3. useState                   useState
+4. useState                   useState
+5. useState                   useState
+6. useState                   useState
+7. useState                   useState
+8. useState                   useState
+9. useState                   useState
+10. useState                  useState
+11. useState                  useState
+12. useState                  useState
+13. useState                  useState
+14. useState                  useState
+15. useEffect                 useEffect
+16. useEffect                 useEffect
+17. useCallback               useCallback
+18. useEffect                 useEffect
+19. useEffect                 useEffect
+20. useEffect                 useEffect
+21. undefined                 useEffect
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    at createUnhandledError (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_client_523921._.js:689:49)
+    at handleClientError (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_client_523921._.js:856:56)
+    at console.error (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_client_523921._.js:991:56)
+    at updateHookTypesDev (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:2944:25)
+    at Object.useEffect (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:12738:13)
+    at exports.useEffect (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:1852:36)
+    at Home (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/_d39072._.js:1664:188)
+    at react-stack-bottom-frame (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:13403:24)
+    at renderWithHooks (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:2977:24)
+    at updateFunctionComponent (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:4732:21)
+    at beginWork (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:5364:24)
+    at runWithFiberInDEV (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:631:20)
+    at performUnitOfWork (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7955:97)
+    at workLoopSync (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7847:40)
+    at renderRootSync (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7830:13)
+    at performWorkOnRoot (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:7565:211)
+    at performWorkOnRootViaSchedulerTask (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_react-dom_1f56dc._.js:8394:9)
+    at MessagePort.performWorkUntilDeadline (https://23659c4f-91ab-43ba-8fb0-0fce08986154-00-1xzel41waugfx.spock.replit.dev/_next/static/chunks/node_modules_next_dist_compiled_107ce8._.js:2353:64)
