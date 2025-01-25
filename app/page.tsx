@@ -70,17 +70,10 @@ export default function Home() {
   const [signupPassword, setSignupPassword] = useState("");
   const [confirmSignupPassword, setConfirmSignupPassword] = useState("");
 
+  const router = useRouter();
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get('addNew') === 'true') {
-      setIsFormVisible(true);
-    }
-  }, [router]);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [sortOption, setSortOption] = useState<keyof Car | "">("");
   const [filters, setFilters] = useState<{
@@ -97,7 +90,12 @@ export default function Home() {
 
   const [loading, setLoading] = useState(true);
 
-  // Removed expandedCarId state
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get('addNew') === 'true') {
+      setIsFormVisible(true);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchMakes = async () => {
