@@ -26,25 +26,34 @@ export default function FilterSortPanel({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest(".filter-sort-panel")) {
+      const filterButton = document.querySelector('.filter-button');
+      const sortButton = document.querySelector('.sort-button');
+      const filterPanel = document.querySelector('.filter-panel');
+      const sortPanel = document.querySelector('.sort-panel');
+
+      if (filterButton?.contains(target) || sortButton?.contains(target)) {
+        return;
+      }
+
+      if (!filterPanel?.contains(target) && !sortPanel?.contains(target)) {
         setShowFilters(false);
         setShowSort(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   return (
-    <div className="relative mb-6 filter-sort-panel">
+    <div className="relative mb-6">
       <div className="flex gap-4 mb-4">
         <button
           onClick={() => {
             setShowFilters(!showFilters);
             setShowSort(false);
           }}
-          className="flex items-center gap-2 bg-gray-800 p-2 rounded-lg hover:bg-gray-700"
+          className="flex items-center gap-2 bg-gray-800 p-2 rounded-lg hover:bg-gray-700 filter-button"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -75,7 +84,7 @@ export default function FilterSortPanel({
             setShowSort(!showSort);
             setShowFilters(false);
           }}
-          className="flex items-center gap-2 bg-gray-800 p-2 rounded-lg hover:bg-gray-700"
+          className="flex items-center gap-2 bg-gray-800 p-2 rounded-lg hover:bg-gray-700 sort-button"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -97,7 +106,7 @@ export default function FilterSortPanel({
       </div>
 
       {showFilters && (
-        <div className="absolute z-10 bg-gray-800 p-4 rounded-lg shadow-lg w-80">
+        <div className="absolute z-10 bg-gray-800 p-4 rounded-lg shadow-lg w-80 filter-panel">
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2">Year Range:</label>
             <div className="flex items-center gap-2">
@@ -235,7 +244,7 @@ export default function FilterSortPanel({
       )}
 
       {showSort && (
-        <div className="absolute z-10 bg-gray-800 p-4 rounded-lg shadow-lg">
+        <div className="absolute z-10 bg-gray-800 p-4 rounded-lg shadow-lg sort-panel">
           <select
             value={sortOption}
             onChange={(e) => setSortOption(e.target.value as keyof Car)}
