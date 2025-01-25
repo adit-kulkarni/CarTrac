@@ -72,15 +72,15 @@ export default function Home() {
 
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get("addNew") === "true") {
+    if (searchParams.get('addNew') === 'true') {
       setIsFormVisible(true);
     }
-  }, []);
-
-  const [user, setUser] = useState<User | null>(null);
+  }, [router]);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [sortOption, setSortOption] = useState<keyof Car | "">("");
   const [filters, setFilters] = useState<{
