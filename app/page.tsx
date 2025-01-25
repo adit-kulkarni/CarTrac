@@ -73,6 +73,15 @@ export default function Home() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get('addNew') === 'true') {
+      setIsFormVisible(true);
+    }
+  }, []);
+
+
   const [user, setUser] = useState<User | null>(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [sortOption, setSortOption] = useState<keyof Car | "">("");
@@ -590,14 +599,6 @@ export default function Home() {
           </div>
         </div>
       )}
-
-      {/* Add URL parameter handling */}
-      {useEffect(() => {
-        const searchParams = new URLSearchParams(window.location.search);
-        if (searchParams.get('addNew') === 'true') {
-          setIsFormVisible(true);
-        }
-      }, [])}
 
       <FilterSortPanel
         filters={filters}
