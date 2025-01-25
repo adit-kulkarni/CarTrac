@@ -587,6 +587,8 @@ export default function Home() {
             Add Car
           </button>
         </form>
+          </div>
+        </div>
       )}
 
       {/* Add URL parameter handling */}
