@@ -25,8 +25,21 @@ export default function FilterSortPanel({
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.filter-sort-panel')) {
+        setShowFilters(false);
+        setShowSort(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
-    <div className="relative mb-6">
+    <div className="relative mb-6 filter-sort-panel">
       <div className="flex gap-4 mb-4">
         <button
           onClick={() => {
