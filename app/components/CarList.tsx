@@ -10,9 +10,10 @@ interface CarListProps {
   cars: Car[];
   onDelete: (id: string, e: React.MouseEvent<HTMLButtonElement>) => void;
   onRate: (carId: string, attribute: string, newRating: number) => Promise<void>;
+  setIsFormVisible: (value: boolean) => void;
 }
 
-export default function CarList({ cars, onDelete, onRate }: CarListProps & { onAddNew?: () => void }) {
+export default function CarList({ cars, onDelete, onRate, setIsFormVisible }: CarListProps) {
   const router = useRouter();
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

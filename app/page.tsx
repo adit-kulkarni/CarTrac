@@ -622,6 +622,7 @@ export default function Home() {
         cars={sortedAndFilteredCars}
         onDelete={deleteCar}
         onRate={handleRate}
+        setIsFormVisible={setIsFormVisible}
       />
     </div>
   );
