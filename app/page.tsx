@@ -74,7 +74,13 @@ export default function Home() {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [user, setUser] = useState<User | null>(null);
-  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [isFormVisible, setIsFormVisible] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      return searchParams.get('addNew') === 'true';
+    }
+    return false;
+  });
   const [sortOption, setSortOption] = useState<keyof Car | "">("");
   const [filters, setFilters] = useState<{
     year: [number, number];
@@ -91,10 +97,13 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.get('addNew') === 'true') {
-      setIsFormVisible(true);
-    }
+    const handleRouteChange = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      setIsFormVisible(searchParams.get('addNew') === 'true');
+    };
+
+    window.addEventListener('popstate', handleRouteChange);
+    return () => window.removeEventListener('popstate', handleRouteChange);
   }, []);
 
   useEffect(() => {
