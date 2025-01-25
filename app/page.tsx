@@ -452,7 +452,7 @@ export default function Home() {
   
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 font-[\'Playfair Display\'] p-6">
+    <div className="min-h-screen bg-gray-900 text-gray-200 font-['Playfair Display'] p-6">
       <h1 className="text-4xl font-extrabold text-center mb-6 tracking-wide">
         Car Tracker
       </h1>
