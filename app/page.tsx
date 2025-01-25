@@ -19,6 +19,7 @@ import {
   getDocs,
   deleteDoc,
   doc,
+  updateDoc,
 } from "firebase/firestore";
 import { sendEmailVerification } from "firebase/auth";
 import { User } from "firebase/auth";
@@ -70,11 +71,18 @@ export default function Home() {
   const [signupPassword, setSignupPassword] = useState("");
   const [confirmSignupPassword, setConfirmSignupPassword] = useState("");
 
+  const router = useRouter();
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
-
   const [user, setUser] = useState<User | null>(null);
   const [isFormVisible, setIsFormVisible] = useState(false);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.get("addNew") === "true") {
+      setIsFormVisible(true);
+    }
+  }, []);
   const [sortOption, setSortOption] = useState<keyof Car | "">("");
   const [filters, setFilters] = useState<{
     year: [number, number];
@@ -90,8 +98,15 @@ export default function Home() {
 
   const [loading, setLoading] = useState(true);
 
-  // Removed expandedCarId state
-  
+  useEffect(() => {
+    const handleRouteChange = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      setIsFormVisible(searchParams.get("addNew") === "true");
+    };
+
+    window.addEventListener("popstate", handleRouteChange);
+    return () => window.removeEventListener("popstate", handleRouteChange);
+  }, []);
 
   useEffect(() => {
     const fetchMakes = async () => {
@@ -192,7 +207,10 @@ export default function Home() {
       // Create a unique filename using timestamp
       const timestamp = Date.now();
       const uniqueFilename = `${timestamp}-${file.name}`;
-      const storageRef = ref(storage, `car-images/${user.uid}/${uniqueFilename}`);
+      const storageRef = ref(
+        storage,
+        `car-images/${user.uid}/${uniqueFilename}`,
+      );
 
       try {
         console.log("Uploading image...");
@@ -202,7 +220,7 @@ export default function Home() {
 
         // Wait for state update to complete
         await new Promise<void>((resolve) => {
-          setForm(prevForm => {
+          setForm((prevForm) => {
             const newForm = { ...prevForm, image: downloadURL };
             console.log("Updated form with image:", newForm);
             resolve();
@@ -234,7 +252,7 @@ export default function Home() {
       roles: form.roles,
       comfort: 0,
       drivingExperience: 0,
-      stylishness: 0
+      stylishness: 0,
     };
     if (user) {
       try {
@@ -260,6 +278,7 @@ export default function Home() {
       roles: [],
     });
     setIsFormVisible(false);
+    router.push("/"); // Clear the addNew parameter from URL
   };
 
   const deleteCar = async (carId: string, e: React.MouseEvent) => {
@@ -439,22 +458,30 @@ export default function Home() {
     return 0;
   });
 
-  const handleRate = (carId: string, attribute: string, newRating: number) => {
-    setRatings((prevRatings) => ({
-      ...prevRatings,
-      [carId]: {
-        ...prevRatings[carId],
+  const handleRate = async (
+    carId: string,
+    attribute: string,
+    newRating: number,
+  ) => {
+    try {
+      const carRef = doc(db, "cars", carId);
+      await updateDoc(carRef, {
         [attribute]: newRating,
-      },
-    }));
+      });
+      setCars((prevCars) =>
+        prevCars.map((car) =>
+          car.id === carId ? { ...car, [attribute]: newRating } : car,
+        ),
+      );
+    } catch (error) {
+      console.error("Error updating rating:", error);
+    }
   };
 
-  
-
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 font-[\'Playfair Display\'] p-6">
+    <div className="min-h-screen bg-gray-900 text-gray-200 p-6">
       <h1 className="text-4xl font-extrabold text-center mb-6 tracking-wide">
-        Car Tracker
+        CarTrac
       </h1>
       <button
         onClick={handleLogout}
@@ -463,123 +490,136 @@ export default function Home() {
         Log Out
       </button>
 
-      <h2
-        className="text-2xl font-bold cursor-pointer mb-4"
-        onClick={() => setIsFormVisible(!isFormVisible)}
-      >
-        Add New Car {isFormVisible ? "-" : "+"}
-      </h2>
-
       {isFormVisible && (
-        <form
-          onSubmit={handleSubmit}
-          className="max-w-md mx-auto mb-8 bg-gray-800 p-6 rounded-lg shadow-lg"
-        >
-          <div className="mb-4">
-            <label className="block text-gray-300 font-bold mb-2">
-              Select Make:
-            </label>
-            <select
-              value={form.make}
-              onChange={(e) =>
-                setForm({ ...form, make: e.target.value, model: "" })
-              }
-              className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Add New Car</h2>
+              <button
+                onClick={() => {
+                  setIsFormVisible(false);
+                  router.push("/");
+                }}
+                className="text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            <form
+              onSubmit={handleSubmit}
+              className="max-w-md mx-auto mb-8 bg-gray-800 p-6 rounded-lg shadow-lg"
             >
-              <option value="">Choose a Make</option>
-              {makes.map((make) => (
-                <option key={make} value={make}>
-                  {make}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-300 font-bold mb-2">
-              Select Model:
-            </label>
-            <select
-              value={form.model}
-              onChange={(e) => setForm({ ...form, model: e.target.value })}
-              className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            >
-              <option value="">Choose a Model</option>
-              {models.map((model) => (
-                <option key={model} value={model}>
-                  {model}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="mb-4">
-            <input
-              type="number"
-              placeholder="Year"
-              value={form.year}
-              onChange={(e) => setForm({ ...form, year: e.target.value })}
-              className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <input
-              type="number"
-              placeholder="Top Speed (km/h)"
-              value={form.topSpeed}
-              onChange={(e) => setForm({ ...form, topSpeed: e.target.value })}
-              className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <input
-              type="number"
-              placeholder="Rating (1-5)"
-              value={form.rating}
-              onChange={(e) => setForm({ ...form, rating: e.target.value })}
-              className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-300 font-bold mb-2">Roles:</label>
-            {["Driver", "Passenger", "Observed"].map((role) => (
-              <div key={role} className="flex items-center mb-2">
-                <input
-                  type="checkbox"
-                  value={role}
-                  checked={form.roles.includes(role)}
-                  onChange={() =>
-                    setForm((prevForm) => ({
-                      ...prevForm,
-                      roles: prevForm.roles.includes(role)
-                        ? prevForm.roles.filter((r) => r !== role)
-                        : [...prevForm.roles, role],
-                    }))
+              <div className="mb-4">
+                <label className="block text-gray-300 font-bold mb-2">
+                  Select Make:
+                </label>
+                <select
+                  value={form.make}
+                  onChange={(e) =>
+                    setForm({ ...form, make: e.target.value, model: "" })
                   }
-                  className="mr-2"
-                />
-                <span className="text-gray-300">{role}</span>
+                  className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Choose a Make</option>
+                  {makes.map((make) => (
+                    <option key={make} value={make}>
+                      {make}
+                    </option>
+                  ))}
+                </select>
               </div>
-            ))}
+              <div className="mb-4">
+                <label className="block text-gray-300 font-bold mb-2">
+                  Select Model:
+                </label>
+                <select
+                  value={form.model}
+                  onChange={(e) => setForm({ ...form, model: e.target.value })}
+                  className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
+                  <option value="">Choose a Model</option>
+                  {models.map((model) => (
+                    <option key={model} value={model}>
+                      {model}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mb-4">
+                <input
+                  type="number"
+                  placeholder="Year"
+                  value={form.year}
+                  onChange={(e) => setForm({ ...form, year: e.target.value })}
+                  className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <input
+                  type="number"
+                  placeholder="Top Speed (km/h)"
+                  value={form.topSpeed}
+                  onChange={(e) =>
+                    setForm({ ...form, topSpeed: e.target.value })
+                  }
+                  className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <input
+                  type="number"
+                  placeholder="Rating (1-5)"
+                  value={form.rating}
+                  onChange={(e) => setForm({ ...form, rating: e.target.value })}
+                  className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-gray-300 font-bold mb-2">
+                  Roles:
+                </label>
+                {["Driver", "Passenger", "Observed"].map((role) => (
+                  <div key={role} className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      value={role}
+                      checked={form.roles.includes(role)}
+                      onChange={() =>
+                        setForm((prevForm) => ({
+                          ...prevForm,
+                          roles: prevForm.roles.includes(role)
+                            ? prevForm.roles.filter((r) => r !== role)
+                            : [...prevForm.roles, role],
+                        }))
+                      }
+                      className="mr-2"
+                    />
+                    <span className="text-gray-300">{role}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mb-4">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
+              >
+                Add Car
+              </button>
+            </form>
           </div>
-          <div className="mb-4">
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="w-full p-3 border border-gray-700 rounded bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
-          >
-            Add Car
-          </button>
-        </form>
+        </div>
       )}
 
       <FilterSortPanel
@@ -589,11 +629,14 @@ export default function Home() {
         setSortOption={setSortOption}
       />
 
-      <h2 className="text-3xl font-semibold mb-6 tracking-wide">Cars</h2>
-      <CarList 
+      <h2 className="text-3xl font-semibold mb-6 tracking-wide">
+        Your Car Collection
+      </h2>
+      <CarList
         cars={sortedAndFilteredCars}
         onDelete={deleteCar}
         onRate={handleRate}
+        setIsFormVisible={setIsFormVisible}
       />
     </div>
   );
