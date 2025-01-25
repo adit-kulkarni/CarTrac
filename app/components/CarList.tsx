@@ -62,7 +62,10 @@ export default function CarList({ cars, onDelete, onRate }: CarListProps & { onA
         </div>
       ))}
       <div
-        onClick={() => router.push('/?addNew=true')}
+        onClick={() => {
+          setIsFormVisible(true);
+          router.push('/?addNew=true');
+        }}
         className="bg-gray-800 rounded-lg shadow-lg overflow-hidden cursor-pointer min-h-[400px] flex items-center justify-center group hover:bg-gray-700 transition-all"
       >
         <svg
