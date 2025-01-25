@@ -1,7 +1,5 @@
-
 "use client";
-
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 import { Car } from "../page";
 
 interface FilterSortPanelProps {
@@ -16,11 +14,11 @@ interface FilterSortPanelProps {
   setSortOption: (option: keyof Car | "") => void;
 }
 
-export default function FilterSortPanel({ 
-  filters, 
-  setFilters, 
-  sortOption, 
-  setSortOption 
+export default function FilterSortPanel({
+  filters,
+  setFilters,
+  sortOption,
+  setSortOption,
 }: FilterSortPanelProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
@@ -28,14 +26,14 @@ export default function FilterSortPanel({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.filter-sort-panel')) {
+      if (!target.closest(".filter-sort-panel")) {
         setShowFilters(false);
         setShowSort(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -48,7 +46,17 @@ export default function FilterSortPanel({
           }}
           className="flex items-center gap-2 bg-gray-800 p-2 rounded-lg hover:bg-gray-700"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <line x1="4" y1="21" x2="4" y2="14" />
             <line x1="4" y1="10" x2="4" y2="3" />
             <line x1="12" y1="21" x2="12" y2="12" />
@@ -69,7 +77,17 @@ export default function FilterSortPanel({
           }}
           className="flex items-center gap-2 bg-gray-800 p-2 rounded-lg hover:bg-gray-700"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <line x1="12" y1="3" x2="12" y2="21" />
             <polyline points="17 8 12 3 7 8" />
             <polyline points="17 16 12 21 7 16" />
@@ -110,11 +128,15 @@ export default function FilterSortPanel({
                 className="w-full"
               />
             </div>
-            <span className="text-sm">{filters.year[0]} - {filters.year[1]}</span>
+            <span className="text-sm">
+              {filters.year[0]} - {filters.year[1]}
+            </span>
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-bold mb-2">Speed Range (km/h):</label>
+            <label className="block text-sm font-bold mb-2">
+              Speed Range (km/h):
+            </label>
             <div className="flex items-center gap-2">
               <input
                 type="range"
@@ -143,11 +165,15 @@ export default function FilterSortPanel({
                 className="w-full"
               />
             </div>
-            <span className="text-sm">{filters.topSpeed[0]} - {filters.topSpeed[1]}</span>
+            <span className="text-sm">
+              {filters.topSpeed[0]} - {filters.topSpeed[1]}
+            </span>
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-bold mb-2">Rating Range:</label>
+            <label className="block text-sm font-bold mb-2">
+              Rating Range:
+            </label>
             <div className="flex items-center gap-2">
               <input
                 type="range"
@@ -178,7 +204,9 @@ export default function FilterSortPanel({
                 className="w-full"
               />
             </div>
-            <span className="text-sm">{filters.rating[0]} - {filters.rating[1]}</span>
+            <span className="text-sm">
+              {filters.rating[0]} - {filters.rating[1]}
+            </span>
           </div>
 
           <div>
