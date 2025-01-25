@@ -463,15 +463,22 @@ export default function Home() {
         Log Out
       </button>
 
-      <h2
-        className="text-2xl font-bold cursor-pointer mb-4"
-        onClick={() => setIsFormVisible(!isFormVisible)}
-      >
-        Add New Car {isFormVisible ? "-" : "+"}
-      </h2>
-
       {isFormVisible && (
-        <form
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold">Add New Car</h2>
+              <button 
+                onClick={() => {
+                  setIsFormVisible(false);
+                  router.push('/');
+                }}
+                className="text-gray-400 hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+            <form
           onSubmit={handleSubmit}
           className="max-w-md mx-auto mb-8 bg-gray-800 p-6 rounded-lg shadow-lg"
         >
@@ -581,6 +588,14 @@ export default function Home() {
           </button>
         </form>
       )}
+
+      {/* Add URL parameter handling */}
+      {useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        if (searchParams.get('addNew') === 'true') {
+          setIsFormVisible(true);
+        }
+      }, []);}
 
       <FilterSortPanel
         filters={filters}
