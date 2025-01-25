@@ -597,7 +597,7 @@ export default function Home() {
         if (searchParams.get('addNew') === 'true') {
           setIsFormVisible(true);
         }
-      }, []);}
+      }, [])}
 
       <FilterSortPanel
         filters={filters}
